@@ -1,18 +1,23 @@
 """Application configuration using Pydantic Settings."""
 
 import functools
+import os
 from pathlib import Path
 
+from dotenv import load_dotenv
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Load .env BEFORE pydantic-settings reads os.environ.
+# override=True ensures .env values win over empty shell exports
+# (e.g. ANTHROPIC_API_KEY="" set by Claude Code).
+load_dotenv(override=True)
 
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
         extra="ignore",
     )
 

@@ -2,9 +2,11 @@
 
 import secrets
 import uuid
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
+from typing import AsyncIterator
 
 import aiosqlite
 
@@ -58,12 +60,16 @@ class Database:
     def __init__(self, db_path: Path) -> None:
         self._db_path = db_path
 
-    async def _connect(self) -> aiosqlite.Connection:
-        conn = await aiosqlite.connect(self._db_path)
-        conn.row_factory = aiosqlite.Row
-        await conn.execute("PRAGMA journal_mode=WAL")
-        await conn.execute("PRAGMA foreign_keys=ON")
-        return conn
+    @asynccontextmanager
+    async def _conn(self) -> AsyncIterator[aiosqlite.Connection]:
+        db = await aiosqlite.connect(self._db_path)
+        db.row_factory = aiosqlite.Row
+        await db.execute("PRAGMA journal_mode=WAL")
+        await db.execute("PRAGMA foreign_keys=ON")
+        try:
+            yield db
+        finally:
+            await db.close()
 
     # --- User CRUD ---
 
@@ -75,7 +81,7 @@ class Database:
     ) -> UserRow:
         user_id = str(uuid.uuid4())
         token = secrets.token_urlsafe(32)
-        async with await self._connect() as db:
+        async with self._conn() as db:
             await db.execute(
                 """INSERT INTO users (id, name, email, vault_path, onboarding_token)
                    VALUES (?, ?, ?, ?, ?)""",
@@ -95,7 +101,7 @@ class Database:
         )
 
     async def get_user_by_telegram_id(self, telegram_id: int) -> UserRow | None:
-        async with await self._connect() as db:
+        async with self._conn() as db:
             cursor = await db.execute(
                 "SELECT * FROM users WHERE telegram_id = ?", (telegram_id,)
             )
@@ -103,7 +109,7 @@ class Database:
             return self._row_to_user(row) if row else None
 
     async def get_user_by_token(self, token: str) -> UserRow | None:
-        async with await self._connect() as db:
+        async with self._conn() as db:
             cursor = await db.execute(
                 "SELECT * FROM users WHERE onboarding_token = ?", (token,)
             )
@@ -111,15 +117,23 @@ class Database:
             return self._row_to_user(row) if row else None
 
     async def get_user_by_email(self, email: str) -> UserRow | None:
-        async with await self._connect() as db:
+        async with self._conn() as db:
             cursor = await db.execute(
                 "SELECT * FROM users WHERE email = ?", (email,)
             )
             row = await cursor.fetchone()
             return self._row_to_user(row) if row else None
 
+    async def update_vault_path(self, user_id: str, vault_path: str) -> None:
+        async with self._conn() as db:
+            await db.execute(
+                "UPDATE users SET vault_path = ? WHERE id = ?",
+                (vault_path, user_id),
+            )
+            await db.commit()
+
     async def link_telegram(self, user_id: str, telegram_id: int) -> None:
-        async with await self._connect() as db:
+        async with self._conn() as db:
             await db.execute(
                 """UPDATE users SET telegram_id = ?, onboarding_token = NULL
                    WHERE id = ?""",
@@ -130,7 +144,7 @@ class Database:
     # --- Invites ---
 
     async def validate_invite(self, code: str) -> bool:
-        async with await self._connect() as db:
+        async with self._conn() as db:
             cursor = await db.execute(
                 "SELECT code FROM invites WHERE code = ? AND used_by IS NULL",
                 (code,),
@@ -138,7 +152,7 @@ class Database:
             return await cursor.fetchone() is not None
 
     async def use_invite(self, code: str, user_id: str) -> None:
-        async with await self._connect() as db:
+        async with self._conn() as db:
             await db.execute(
                 "UPDATE invites SET used_by = ?, used_at = CURRENT_TIMESTAMP WHERE code = ?",
                 (user_id, code),
@@ -147,7 +161,7 @@ class Database:
 
     async def generate_invites(self, count: int, prefix: str = "alpha") -> list[str]:
         codes = [f"{prefix}-{secrets.token_hex(3)}" for _ in range(count)]
-        async with await self._connect() as db:
+        async with self._conn() as db:
             await db.executemany(
                 "INSERT OR IGNORE INTO invites (code) VALUES (?)",
                 [(c,) for c in codes],
@@ -166,7 +180,7 @@ class Database:
         output_tokens: int = 0,
         cost_usd: float = 0,
     ) -> None:
-        async with await self._connect() as db:
+        async with self._conn() as db:
             await db.execute(
                 """INSERT INTO usage_log (user_id, action, model, input_tokens, output_tokens, cost_usd)
                    VALUES (?, ?, ?, ?, ?, ?)""",
@@ -176,7 +190,7 @@ class Database:
 
     async def get_daily_usage_count(self, user_id: str, action: str) -> int:
         today = date.today().isoformat()
-        async with await self._connect() as db:
+        async with self._conn() as db:
             cursor = await db.execute(
                 """SELECT COUNT(*) FROM usage_log
                    WHERE user_id = ? AND action = ? AND date(created_at) = ?""",
@@ -187,7 +201,7 @@ class Database:
 
     async def get_total_daily_usage(self, user_id: str) -> int:
         today = date.today().isoformat()
-        async with await self._connect() as db:
+        async with self._conn() as db:
             cursor = await db.execute(
                 """SELECT COUNT(*) FROM usage_log
                    WHERE user_id = ? AND action IN ('ask', 'do', 'process')
@@ -200,14 +214,14 @@ class Database:
     # --- Admin ---
 
     async def list_users(self) -> list[UserRow]:
-        async with await self._connect() as db:
+        async with self._conn() as db:
             cursor = await db.execute("SELECT * FROM users ORDER BY created_at DESC")
             rows = await cursor.fetchall()
             return [self._row_to_user(r) for r in rows]
 
     async def get_usage_stats(self) -> dict:
         today = date.today().isoformat()
-        async with await self._connect() as db:
+        async with self._conn() as db:
             cursor = await db.execute("SELECT COUNT(*) FROM users")
             total_users = (await cursor.fetchone())[0]
 

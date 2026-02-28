@@ -80,21 +80,21 @@ def create_app(settings: Settings, db: Database) -> FastAPI:
         if existing:
             raise HTTPException(status_code=400, detail="Email уже зарегистрирован")
 
-        # Create user + vault directory
-        import uuid
-        user_id = str(uuid.uuid4())
-        vault_path = settings.vaults_dir / user_id
+        # Create user first, then set up vault using the generated user_id
+        user = await db.create_user(
+            name=req.name,
+            email=req.email,
+            vault_path="",  # Updated below
+        )
+
+        vault_path = settings.vaults_dir / user.id
         vault_path.mkdir(parents=True, exist_ok=True)
         (vault_path / "daily").mkdir(exist_ok=True)
         (vault_path / "attachments").mkdir(exist_ok=True)
         (vault_path / "docs").mkdir(exist_ok=True)
         (vault_path / ".sessions").mkdir(exist_ok=True)
 
-        user = await db.create_user(
-            name=req.name,
-            email=req.email,
-            vault_path=str(vault_path),
-        )
+        await db.update_vault_path(user.id, str(vault_path))
 
         # Mark invite as used
         await db.use_invite(req.invite_code, user.id)
