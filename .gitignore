@@ -1,0 +1,25 @@
+.env
+.env.local
+.env.*.local
+
+# Data (user vaults, database)
+data/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.Python
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

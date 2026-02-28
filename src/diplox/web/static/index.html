@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diplox — AI-ассистент для студентов</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <section class="hero">
+            <span class="badge">Alpha Test</span>
+            <h1>Diplox</h1>
+            <p>AI-ассистент для студентов. Сохраняй заметки голосом и текстом, задавай вопросы по своим материалам, получай структурированные конспекты.</p>
+        </section>
+
+        <section class="features">
+            <div class="feature">
+                <div class="icon">🎤</div>
+                <h3>Голосовые заметки</h3>
+                <p>Надиктуй мысль — бот транскрибирует и сохранит</p>
+            </div>
+            <div class="feature">
+                <div class="icon">📄</div>
+                <h3>Документы</h3>
+                <p>Загрузи PDF или DOCX — текст извлечётся автоматически</p>
+            </div>
+            <div class="feature">
+                <div class="icon">❓</div>
+                <h3>Вопросы по заметкам</h3>
+                <p>Спроси что угодно — AI ответит по твоим материалам</p>
+            </div>
+            <div class="feature">
+                <div class="icon">📊</div>
+                <h3>Обработка дня</h3>
+                <p>Конспект, ключевые идеи и план на завтра</p>
+            </div>
+        </section>
+
+        <section class="register-section">
+            <h2>Регистрация</h2>
+
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="name">Имя</label>
+                    <input type="text" id="name" name="name" placeholder="Как тебя зовут?" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="student@university.ru" required>
+                </div>
+                <div class="form-group">
+                    <label for="invite_code">Инвайт-код</label>
+                    <input type="text" id="invite_code" name="invite_code" placeholder="alpha-xxxxxx" required>
+                </div>
+                <button type="submit" class="btn" id="submitBtn">Зарегистрироваться</button>
+            </form>
+
+            <div id="errorMsg" class="message error hidden"></div>
+
+            <div id="successBlock" class="hidden">
+                <div class="message success">Регистрация прошла успешно!</div>
+                <a id="botLink" href="#" class="btn btn-success" style="margin-top: 1rem; display: block;">
+                    Открыть бота в Telegram
+                </a>
+            </div>
+        </section>
+
+        <footer class="footer">
+            Diplox Alpha &copy; 2026
+        </footer>
+    </div>
+
+    <script>
+        const form = document.getElementById('registerForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const errorMsg = document.getElementById('errorMsg');
+        const successBlock = document.getElementById('successBlock');
+        const botLink = document.getElementById('botLink');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorMsg.classList.add('hidden');
+            successBlock.classList.add('hidden');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Регистрация...';
+
+            const data = {
+                name: document.getElementById('name').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                invite_code: document.getElementById('invite_code').value.trim(),
+            };
+
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+
+                const result = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(result.detail || 'Ошибка регистрации');
+                }
+
+                form.classList.add('hidden');
+                botLink.href = result.deep_link;
+                successBlock.classList.remove('hidden');
+            } catch (err) {
+                errorMsg.textContent = err.message;
+                errorMsg.classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Зарегистрироваться';
+            }
+        });
+    </script>
+</body>
+</html>

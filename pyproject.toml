@@ -1,0 +1,37 @@
+[project]
+name = "diplox-bot"
+version = "0.1.0"
+description = "Multi-tenant AI assistant for students — Telegram bot + FastAPI"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aiogram>=3.0",
+    "aiosqlite>=0.20",
+    "anthropic>=0.42",
+    "deepgram-sdk",
+    "fastapi>=0.115",
+    "google-genai>=1.0",
+    "httpx",
+    "jinja2>=3.1",
+    "openpyxl>=3.1",
+    "pydantic>=2.0",
+    "pydantic-settings",
+    "pymupdf>=1.24",
+    "python-docx>=1.1",
+    "python-multipart>=0.0.9",
+    "uvicorn[standard]>=0.34",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.7,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "diplox"
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

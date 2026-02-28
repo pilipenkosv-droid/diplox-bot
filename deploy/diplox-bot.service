@@ -1,0 +1,15 @@
+[Unit]
+Description=Diplox Alpha Bot
+After=network.target
+
+[Service]
+Type=simple
+User=sergey
+WorkingDirectory=/home/sergey/projects/diplox-bot
+ExecStart=/home/sergey/.local/bin/uv run python -m diplox
+Restart=always
+RestartSec=10
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,192 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --primary: #6C5CE7;
+    --primary-light: #A29BFE;
+    --bg: #0F0F1A;
+    --surface: #1A1A2E;
+    --text: #E8E8F0;
+    --text-muted: #9090A0;
+    --accent: #00D2D3;
+    --error: #FF6B6B;
+    --success: #51CF66;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+
+/* Hero */
+.hero {
+    text-align: center;
+    padding: 3rem 0 2rem;
+}
+
+.hero h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-light), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+}
+
+.hero .badge {
+    display: inline-block;
+    background: var(--surface);
+    border: 1px solid var(--primary);
+    color: var(--primary-light);
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.hero p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+/* Features */
+.features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    padding: 2rem 0;
+}
+
+.feature {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 1.25rem;
+}
+
+.feature .icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.feature h3 {
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+}
+
+.feature p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Registration form */
+.register-section {
+    padding: 2rem 0;
+}
+
+.register-section h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--surface);
+    border: 1px solid #2A2A3E;
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    border-color: var(--primary);
+}
+
+.form-group input::placeholder {
+    color: #505060;
+}
+
+.btn {
+    display: block;
+    width: 100%;
+    padding: 0.85rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-top: 1.5rem;
+}
+
+.btn:hover { opacity: 0.9; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-success {
+    background: var(--success);
+    color: #0F0F1A;
+    text-decoration: none;
+    text-align: center;
+}
+
+/* Messages */
+.message {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+.message.error {
+    background: rgba(255, 107, 107, 0.15);
+    color: var(--error);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+}
+
+.message.success {
+    background: rgba(81, 207, 102, 0.15);
+    color: var(--success);
+    border: 1px solid rgba(81, 207, 102, 0.3);
+}
+
+.hidden { display: none; }
+
+/* Footer */
+.footer {
+    text-align: center;
+    padding: 2rem 0;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+@media (max-width: 480px) {
+    .hero h1 { font-size: 2rem; }
+    .features { grid-template-columns: 1fr; }
+    .container { padding: 1.5rem 1rem; }
+}
