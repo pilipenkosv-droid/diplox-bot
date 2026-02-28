@@ -17,6 +17,7 @@ async def main() -> None:
     from diplox.bot.main import create_bot, create_dispatcher, create_user_context_middleware
     from diplox.config import get_settings
     from diplox.services.database import Database, init_db
+    from diplox.services.diplox_api import DiploxAPI
     from diplox.services.llm import LLMRouter
     from diplox.services.user_context import UserContextService
     from diplox.web.app import create_app
@@ -33,6 +34,7 @@ async def main() -> None:
     db = Database(settings.db_path)
     user_ctx_service = UserContextService(db)
     llm_router = LLMRouter(settings.gemini_api_key, settings.anthropic_api_key)
+    diplox_api = DiploxAPI(settings.diplox_api_url)
 
     # 3. Create bot + dispatcher
     bot = create_bot(settings)
@@ -43,6 +45,7 @@ async def main() -> None:
     dp["db"] = db
     dp["user_ctx_service"] = user_ctx_service
     dp["llm_router"] = llm_router
+    dp["diplox_api"] = diplox_api
     dp["settings"] = settings
 
     # 5. Create FastAPI app

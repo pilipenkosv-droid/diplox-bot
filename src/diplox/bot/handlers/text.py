@@ -6,6 +6,7 @@ from datetime import datetime
 from aiogram import Router
 from aiogram.types import Message
 
+from diplox.bot.keyboards import MENU_BUTTONS
 from diplox.services.session import SessionStore
 from diplox.services.storage import VaultStorage
 from diplox.services.user_context import UserContext
@@ -14,7 +15,7 @@ router = Router(name="text")
 logger = logging.getLogger(__name__)
 
 
-@router.message(lambda m: m.text is not None and not m.text.startswith("/"))
+@router.message(lambda m: m.text is not None and not m.text.startswith("/") and m.text not in MENU_BUTTONS)
 async def handle_text(message: Message, user_ctx: UserContext) -> None:
     if not message.text or not message.from_user:
         return

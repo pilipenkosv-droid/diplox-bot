@@ -6,6 +6,7 @@ from aiogram import Router
 from aiogram.filters import Command, CommandObject
 from aiogram.types import Message
 
+from diplox.bot.keyboards import get_main_menu
 from diplox.config import get_settings
 from diplox.services.database import Database
 from diplox.services.user_context import UserContext, UserContextService
@@ -34,8 +35,8 @@ async def cmd_start(
         if existing:
             await message.answer(
                 f"👋 С возвратом, <b>{existing.name}</b>!\n\n"
-                "Отправь текст или голосовое — я сохраню в твой vault.\n"
-                "Команды: /ask, /do, /process, /help, /status"
+                "Используй меню внизу для навигации 👇",
+                reply_markup=get_main_menu(),
             )
         else:
             settings = get_settings()
@@ -80,12 +81,8 @@ async def cmd_start(
         "📝 <b>Отправь текст</b> — сохраню заметку\n"
         "🎤 <b>Отправь голосовое</b> — транскрибирую и сохраню\n"
         "📄 <b>Отправь документ</b> (PDF, DOCX) — извлеку текст\n\n"
-        "📌 <b>Команды:</b>\n"
-        "/ask — задать вопрос по твоим заметкам\n"
-        "/do — попросить выполнить задачу\n"
-        "/process — обработать записи за день\n"
-        "/status — проверить квоту\n"
-        "/help — справка"
+        "Используй меню внизу для навигации 👇",
+        reply_markup=get_main_menu(),
     )
 
     logger.info("User onboarded: %s (tg: %d)", user.name, telegram_id)
@@ -95,17 +92,23 @@ async def cmd_start(
 async def cmd_help(message: Message) -> None:
     await message.answer(
         "📖 <b>Diplox — AI-ассистент для студентов</b>\n\n"
-        "<b>Сохранение заметок:</b>\n"
+        "<b>📝 Заметки:</b>\n"
         "• Отправь текст — сохраню как заметку\n"
         "• Отправь голосовое — транскрибирую и сохраню\n"
         "• Отправь PDF/DOCX — извлеку текст\n\n"
-        "<b>AI-команды:</b>\n"
-        "/ask [вопрос] — задать вопрос по заметкам\n"
-        "/do [задача] — попросить выполнить задачу\n"
+        "<b>🤖 AI-команды:</b>\n"
+        "/ask — задать вопрос по заметкам\n"
+        "/do — выполнить задачу\n"
         "/process — обработать записи за день\n\n"
-        "<b>Прочее:</b>\n"
-        "/status — квота и статистика\n"
-        "/help — эта справка"
+        "<b>🎓 Инструменты:</b>\n"
+        "• План работы (диплом, курсовая, ВКР...)\n"
+        "• Проверка грамматики\n"
+        "• Рерайт для уникальности\n"
+        "• Аннотация / реферат\n"
+        "• Поиск литературы\n"
+        "• Форматирование по ГОСТу\n\n"
+        "Используй меню внизу 👇",
+        reply_markup=get_main_menu(),
     )
 
 

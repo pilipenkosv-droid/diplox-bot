@@ -24,15 +24,25 @@ def create_bot(settings: Settings) -> Bot:
 
 
 def create_dispatcher() -> Dispatcher:
-    from diplox.bot.handlers import ask, do, document, process, start, text, voice
+    from diplox.bot.handlers import ask, chat, do, document, menu, notes, process, start, text, tools, voice
 
     dp = Dispatcher(storage=MemoryStorage())
 
-    # Order matters: start first, FSM-aware before catch-alls, text last
+    # Order matters:
+    # 1. Commands first
     dp.include_router(start.router)
     dp.include_router(ask.router)
     dp.include_router(do.router)
     dp.include_router(process.router)
+    # 2. Tools (FSM states + callbacks)
+    dp.include_router(tools.router)
+    # 3. Chat (FSM state)
+    dp.include_router(chat.router)
+    # 4. Notes (callbacks)
+    dp.include_router(notes.router)
+    # 5. Menu (reply keyboard buttons — BEFORE catch-all text)
+    dp.include_router(menu.router)
+    # 6. Catch-all handlers last
     dp.include_router(voice.router)
     dp.include_router(document.router)
     dp.include_router(text.router)

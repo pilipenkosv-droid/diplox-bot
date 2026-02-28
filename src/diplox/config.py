@@ -42,6 +42,10 @@ class Settings(BaseSettings):
         default="https://diplox.online",
         description="Landing page URL",
     )
+    diplox_api_url: str = Field(
+        default="https://diplox.online",
+        description="Diplox web app API base URL",
+    )
 
     @property
     def db_path(self) -> Path:
