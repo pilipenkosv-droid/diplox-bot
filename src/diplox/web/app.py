@@ -42,6 +42,11 @@ class GenerateInvitesRequest(BaseModel):
     prefix: str = "alpha"
 
 
+class ProvisionProUserRequest(BaseModel):
+    name: str
+    email: EmailStr
+
+
 def create_app(settings: Settings, db: Database) -> FastAPI:
     app = FastAPI(title="Diplox Alpha", docs_url=None, redoc_url=None)
     app.add_middleware(NoCacheStaticMiddleware)
@@ -128,6 +133,38 @@ def create_app(settings: Settings, db: Database) -> FastAPI:
                 for u in users
             ]
         }
+
+    @app.post("/api/provision-pro-user", dependencies=[Depends(require_admin)])
+    async def provision_pro_user(req: ProvisionProUserRequest):
+        """Auto-provision bot access for Pro subscribers (called by web app)."""
+        # Idempotent: if email exists, return existing deep link
+        existing = await db.get_user_by_email(req.email)
+        if existing:
+            if existing.onboarding_token:
+                deep_link = f"{settings.bot_url}?start={existing.onboarding_token}"
+            else:
+                deep_link = settings.bot_url
+            return {"success": True, "deep_link": deep_link, "existing": True}
+
+        # Create user without invite code
+        user = await db.create_user(
+            name=req.name,
+            email=req.email,
+            vault_path="",
+        )
+
+        vault_path = settings.vaults_dir / user.id
+        vault_path.mkdir(parents=True, exist_ok=True)
+        (vault_path / "daily").mkdir(exist_ok=True)
+        (vault_path / "attachments").mkdir(exist_ok=True)
+        (vault_path / "docs").mkdir(exist_ok=True)
+        (vault_path / ".sessions").mkdir(exist_ok=True)
+
+        await db.update_vault_path(user.id, str(vault_path))
+
+        deep_link = f"{settings.bot_url}?start={user.onboarding_token}"
+        logger.info("Pro user provisioned: %s (%s)", req.name, req.email)
+        return {"success": True, "deep_link": deep_link, "existing": False}
 
     @app.get("/api/admin/usage", dependencies=[Depends(require_admin)])
     async def usage_stats():
