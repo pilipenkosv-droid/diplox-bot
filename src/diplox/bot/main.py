@@ -24,7 +24,7 @@ def create_bot(settings: Settings) -> Bot:
 
 
 def create_dispatcher() -> Dispatcher:
-    from diplox.bot.handlers import ask, chat, do, document, menu, notes, process, start, text, tools, voice
+    from diplox.bot.handlers import ask, chat, do, document, menu, notes, photo, process, start, text, tools, voice
 
     dp = Dispatcher(storage=MemoryStorage())
 
@@ -44,6 +44,7 @@ def create_dispatcher() -> Dispatcher:
     dp.include_router(menu.router)
     # 6. Catch-all handlers last
     dp.include_router(voice.router)
+    dp.include_router(photo.router)
     dp.include_router(document.router)
     dp.include_router(text.router)
 
